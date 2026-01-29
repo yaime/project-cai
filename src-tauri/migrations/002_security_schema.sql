@@ -32,3 +32,6 @@ CREATE TABLE sys_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES sys_users(id)
 );
+
+-- Index for performance
+CREATE INDEX idx_sys_logs_user_id ON sys_logs(user_id);
