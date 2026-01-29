@@ -1,81 +1,61 @@
-use rusqlite::{Connection, Result};
-use std::sync::Mutex;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use std::path::Path;
 
 pub struct AppState {
-    pub db: Mutex<Option<Connection>>,
+    pub db: SqlitePool,
 }
 
-const MIGRATIONS: &[(&str, &str)] = &[
-    ("001_initial_schema", include_str!("../migrations/001_initial_schema.sql")),
-    ("002_security_schema", include_str!("../migrations/002_security_schema.sql")),
-    ("003_add_voucher_period_index", include_str!("../migrations/003_add_voucher_period_index.sql")),
-    ("004_add_voucher_index", include_str!("../migrations/004_add_voucher_index.sql")),
-];
+pub async fn init_db<P: AsRef<Path>>(path: P) -> Result<SqlitePool, sqlx::Error> {
+    let options = SqliteConnectOptions::new()
+        .filename(path)
+        .create_if_missing(true)
+        .foreign_keys(true);
 
-pub fn init_db<P: AsRef<Path>>(path: P) -> Result<Connection> {
-    let mut conn = Connection::open(path)?;
+    let pool = SqlitePool::connect_with(options).await?;
 
-    // Enable foreign keys
-    conn.execute("PRAGMA foreign_keys = ON;", [])?;
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await?;
 
-    // Create migrations table
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS _migrations (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE,
-            applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )",
-        [],
-    )?;
-
-    let tx = conn.transaction()?;
-
-    for (name, sql) in MIGRATIONS {
-        let count: i32 = tx.query_row(
-            "SELECT count(*) FROM _migrations WHERE name = ?1",
-            [name],
-            |row| row.get(0),
-        )?;
-
-        if count == 0 {
-            tx.execute_batch(sql)?;
-            tx.execute(
-                "INSERT INTO _migrations (name) VALUES (?1)",
-                [name],
-            )?;
-        }
-    }
-
-    tx.commit()?;
-
-    Ok(conn)
+    Ok(pool)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_init_db() {
-        let conn = init_db(":memory:").expect("Failed to init db");
+    #[tokio::test]
+    async fn test_init_db() {
+        // Use a temporary file for testing to ensure connection persistence
+        // (In-memory DBs are per-connection by default in sqlx/sqlite unless shared cache is used)
+        let temp_dir = std::env::temp_dir();
+        let db_name = format!("test_finance_{}.db", uuid::Uuid::new_v4());
+        let db_path = temp_dir.join(&db_name);
+
+        let pool = init_db(&db_path).await.expect("Failed to init db");
 
         // Check if tables exist
-        let count: i32 = conn.query_row(
-            "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='sys_subjects'",
-            [],
-            |row| row.get(0)
-        ).unwrap();
+        let count: i32 = sqlx::query_scalar(
+            "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='sys_subjects'"
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
 
         assert_eq!(count, 1, "sys_subjects table should exist");
 
-        // Check migrations table
-        let mig_count: i32 = conn.query_row(
-            "SELECT count(*) FROM _migrations",
-            [],
-            |row| row.get(0)
-        ).unwrap();
+        // Check migrations table (sqlx uses _sqlx_migrations by default)
+        let rows: Vec<(i64, String)> = sqlx::query_as(
+            "SELECT version, description FROM _sqlx_migrations"
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
 
-        assert_eq!(mig_count, 4, "Should have 4 migrations applied");
+        assert_eq!(rows.len(), 4, "Should have 4 migrations applied");
+
+        // Cleanup
+        pool.close().await;
+        let _ = std::fs::remove_file(db_path);
     }
 }
