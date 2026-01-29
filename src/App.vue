@@ -10,9 +10,7 @@ const theme = ref(darkTheme);
     <n-global-style />
     <n-message-provider>
       <n-dialog-provider>
-        <div class="app-layout">
-          <h1>Financial System Init</h1>
-        </div>
+        <router-view />
       </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
