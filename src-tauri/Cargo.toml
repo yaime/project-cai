@@ -23,3 +23,7 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 thiserror = "1"
 anyhow = "1"
+ort = { version = "2.0.0-rc.9", features = ["load-dynamic", "ndarray"] }
+image = "0.24"
+ndarray = "0.15"
+tauri-plugin-dialog = "2"
