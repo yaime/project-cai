@@ -9,6 +9,8 @@ CREATE TABLE sys_subjects (
     FOREIGN KEY(parent_id) REFERENCES sys_subjects(code)
 );
 
+CREATE INDEX idx_sys_subjects_parent_id ON sys_subjects(parent_id);
+
 -- t_vouchers: Voucher Header
 CREATE TABLE t_vouchers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
