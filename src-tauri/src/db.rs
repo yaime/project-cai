@@ -9,6 +9,7 @@ pub struct AppState {
 const MIGRATIONS: &[(&str, &str)] = &[
     ("001_initial_schema", include_str!("../migrations/001_initial_schema.sql")),
     ("002_security_schema", include_str!("../migrations/002_security_schema.sql")),
+    ("003_add_index_voucher_entries", include_str!("../migrations/003_add_index_voucher_entries.sql")),
 ];
 
 pub fn init_db<P: AsRef<Path>>(path: P) -> Result<Connection> {
@@ -74,6 +75,6 @@ mod tests {
             |row| row.get(0)
         ).unwrap();
 
-        assert_eq!(mig_count, 2, "Should have 2 migrations applied");
+        assert_eq!(mig_count, 3, "Should have 3 migrations applied");
     }
 }
