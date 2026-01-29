@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-[#151c2a] rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-visible">
+      <div class="bg-white dark:bg-[#151c2a] rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-visible flex flex-col">
         <div class="p-6 md:p-8 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#151c2a]">
           <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
             <div class="flex items-center gap-4">
@@ -68,76 +68,169 @@
           </div>
         </div>
 
-        <div class="w-full overflow-x-visible bg-white dark:bg-[#151c2a]">
-          <table class="w-full border-collapse border-y border-slate-300 dark:border-slate-700 min-w-[1000px]">
-            <thead>
-              <tr class="bg-slate-100 dark:bg-slate-900">
-                <th class="w-12 border-r border-slate-300 dark:border-slate-700 py-3 text-center text-slate-400 font-medium text-xs">#</th>
-                <th class="w-12 border-r border-slate-300 dark:border-slate-700 py-3 text-center text-slate-400">
-                  <span class="material-symbols-outlined text-[18px]">settings</span>
-                </th>
-                <th class="w-[30%] border-r border-slate-300 dark:border-slate-700 px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200 text-sm">摘要</th>
-                <th class="w-[30%] border-r border-slate-300 dark:border-slate-700 px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200 text-sm">会计科目</th>
-                <th class="w-[15%] border-r border-slate-300 dark:border-slate-700 px-4 py-3 text-right font-semibold text-slate-700 dark:text-slate-200 text-sm">借方金额</th>
-                <th class="w-[15%] px-4 py-3 text-right font-semibold text-slate-700 dark:text-slate-200 text-sm">贷方金额</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-300 dark:divide-slate-700">
-              <tr class="group bg-blue-50/20 dark:bg-blue-900/10 relative z-10 shadow-[inset_0_0_0_2px_#135bec] transition-colors">
-                <td class="border-r border-slate-300 dark:border-slate-700 text-center text-primary font-bold text-xs font-mono">1</td>
-                <td class="border-r border-slate-300 dark:border-slate-700 text-center">
-                  <button class="text-slate-300 hover:text-red-500 dark:text-slate-600 transition-colors mt-1">
-                    <span class="material-symbols-outlined text-[18px]">do_not_disturb_on</span>
-                  </button>
-                </td>
-                <td class="border-r border-slate-300 dark:border-slate-700 p-0">
-                  <input class="table-input w-full h-11 px-4 border-none bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0" placeholder="摘要" type="text" value="10月办公室房租"/>
-                </td>
-                <td class="border-r border-slate-300 dark:border-slate-700 p-0 relative">
-                  <button class="table-input w-full h-11 px-4 flex items-center justify-between text-left text-sm text-primary bg-blue-50/40 dark:bg-blue-900/10 focus:outline-none">
-                    <span class="font-medium truncate">6602 - 管理费用</span>
-                    <span class="material-symbols-outlined text-[18px] opacity-70">arrow_drop_down</span>
-                  </button>
-                </td>
-                <td class="border-r border-slate-300 dark:border-slate-700 p-0">
-                  <input class="table-input w-full h-11 px-4 border-none bg-transparent text-right font-mono text-sm text-slate-900 dark:text-white focus:ring-0" placeholder="0.00" type="text" value="5,000.00"/>
-                </td>
-                <td class="p-0">
-                  <input class="table-input w-full h-11 px-4 border-none bg-transparent text-right font-mono text-sm text-slate-900 dark:text-white placeholder:text-slate-300 focus:ring-0" placeholder="0.00" type="text"/>
-                </td>
-              </tr>
-              <!-- More rows as in design -->
-            </tbody>
-            <tfoot>
-              <tr class="bg-emerald-50 dark:bg-emerald-900/20 border-t border-slate-300 dark:border-slate-700">
-                <td class="border-r border-emerald-200 dark:border-emerald-800/30 px-4 py-3 text-right" colspan="4">
-                  <div class="flex items-center justify-end gap-2 text-emerald-700 dark:text-emerald-400">
-                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                    <span class="text-xs font-bold uppercase tracking-wider">合计金额</span>
-                  </div>
-                </td>
-                <td class="border-r border-emerald-200 dark:border-emerald-800/30 px-4 py-3 text-right bg-emerald-100/30 dark:bg-emerald-900/20">
-                  <span class="font-mono font-bold text-emerald-800 dark:text-emerald-300">5,000.00</span>
-                </td>
-                <td class="px-4 py-3 text-right bg-emerald-100/30 dark:bg-emerald-900/20">
-                  <span class="font-mono font-bold text-emerald-800 dark:text-emerald-300">5,000.00</span>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+        <div class="flex-1 w-full min-h-[500px] bg-white dark:bg-[#151c2a] p-0 flex flex-col">
+           <ag-grid-vue
+              class="ag-theme-quartz flex-1 w-full"
+              :rowData="rowData"
+              :columnDefs="columnDefs"
+              :defaultColDef="defaultColDef"
+              :pinnedBottomRowData="pinnedBottomRowData"
+              @grid-ready="onGridReady"
+              @cell-value-changed="onCellValueChanged"
+              @cell-key-down="onCellKeyDown"
+           >
+           </ag-grid-vue>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-.table-input:focus {
-    box-shadow: inset 0 0 0 2px #135bec;
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { AgGridVue } from 'ag-grid-vue3';
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
+import { invoke } from '@tauri-apps/api/core';
+
+interface Subject {
+  code: string;
+  name: string;
 }
-.paper-texture {
-    background-color: #fdfbf7;
-    background-image: linear-gradient(0deg, transparent 24%, rgba(0, 0, 0, .02) 25%, rgba(0, 0, 0, .02) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .02) 75%, rgba(0, 0, 0, .02) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(0, 0, 0, .02) 25%, rgba(0, 0, 0, .02) 26%, transparent 27%, transparent 74%, rgba(0, 0, 0, .02) 75%, rgba(0, 0, 0, .02) 76%, transparent 77%, transparent);
-    background-size: 30px 30px;
+
+interface RowData {
+  summary: string;
+  subject: string;
+  debit: number | null;
+  credit: number | null;
 }
-</style>
+
+const rowData = ref<RowData[]>([
+  { summary: '10月办公室房租', subject: '6602 - 管理费用', debit: 5000.00, credit: null },
+  ...Array(10).fill(null).map(() => ({ summary: '', subject: '', debit: null, credit: null }))
+]);
+
+const columnDefs = ref<any[]>([]);
+const defaultColDef = {
+  flex: 1,
+  editable: true,
+  resizable: true,
+};
+const pinnedBottomRowData = ref<any[]>([
+    { summary: 'Total', debit: 0, credit: 0 }
+]);
+
+const gridApi = ref(null);
+
+const onGridReady = (params: any) => {
+  gridApi.value = params.api;
+  calculateTotals();
+};
+
+const subjects = ref<string[]>([]);
+
+onMounted(async () => {
+  try {
+    const result = await invoke<Subject[]>('get_all_subjects');
+    subjects.value = result.map(s => `${s.code} - ${s.name}`);
+
+    columnDefs.value = [
+      {
+        headerName: '#',
+        valueGetter: "node.rowIndex + 1",
+        width: 50,
+        editable: false,
+        pinned: 'left'
+      },
+      { field: 'summary', headerName: '摘要', minWidth: 200 },
+      {
+        field: 'subject',
+        headerName: '会计科目',
+        cellEditor: 'agSelectCellEditor',
+        cellEditorParams: {
+            values: subjects.value
+        },
+        minWidth: 200
+      },
+      {
+        field: 'debit',
+        headerName: '借方金额',
+        type: 'numericColumn',
+        valueFormatter: (params: any) => params.value ? params.value.toFixed(2) : '',
+        valueParser: (params: any) => Number(params.newValue)
+      },
+      {
+        field: 'credit',
+        headerName: '贷方金额',
+        type: 'numericColumn',
+        valueFormatter: (params: any) => params.value ? params.value.toFixed(2) : '',
+        valueParser: (params: any) => Number(params.newValue)
+      }
+    ];
+  } catch (e) {
+    console.error('Failed to load subjects', e);
+  }
+});
+
+const calculateTotals = () => {
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    // We can use gridApi to iterate or rowData if they are synced
+    // gridApi provides access to filtered/sorted data which might be better
+    // but rowData is reactive.
+    // AG Grid updates the objects inside rowData ref.
+
+    rowData.value.forEach(row => {
+        if (row.debit) totalDebit += Number(row.debit);
+        if (row.credit) totalCredit += Number(row.credit);
+    });
+
+    pinnedBottomRowData.value = [{
+        summary: 'Total',
+        subject: '',
+        debit: totalDebit,
+        credit: totalCredit
+    }];
+};
+
+const onCellValueChanged = () => {
+    calculateTotals();
+};
+
+const onCellKeyDown = (e: any) => {
+    const event = e.event;
+    if (event.key === '=') {
+        const colId = e.column.colId;
+        if (colId === 'debit' || colId === 'credit') {
+            event.preventDefault();
+
+            let totalDebit = 0;
+            let totalCredit = 0;
+
+             if (gridApi.value) {
+                (gridApi.value as any).forEachNode((node: any) => {
+                    if (node.data && node.rowIndex !== e.node.rowIndex) {
+                         totalDebit += Number(node.data.debit || 0);
+                         totalCredit += Number(node.data.credit || 0);
+                    }
+                });
+             }
+
+             let balance = 0;
+             if (colId === 'debit') {
+                 balance = totalCredit - totalDebit;
+             } else {
+                 balance = totalDebit - totalCredit;
+             }
+
+             if (balance < 0) balance = 0;
+
+             e.node.setDataValue(colId, balance);
+             // Ensure totals update
+             calculateTotals();
+        }
+    }
+};
+
+</script>

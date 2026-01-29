@@ -3,11 +3,39 @@ pub mod db;
 use std::fs;
 use std::sync::Mutex;
 use tauri::Manager;
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct Subject {
+    code: String,
+    name: String,
+}
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+fn get_all_subjects(state: tauri::State<db::AppState>) -> Result<Vec<Subject>, String> {
+    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let conn = db.as_ref().ok_or("Database not connected")?;
+
+    let mut stmt = conn.prepare("SELECT code, name FROM sys_subjects ORDER BY code").map_err(|e| e.to_string())?;
+    let subjects_iter = stmt.query_map([], |row| {
+        Ok(Subject {
+            code: row.get(0)?,
+            name: row.get(1)?,
+        })
+    }).map_err(|e| e.to_string())?;
+
+    let mut subjects = Vec::new();
+    for subject in subjects_iter {
+        subjects.push(subject.map_err(|e| e.to_string())?);
+    }
+
+    Ok(subjects)
 }
 
 #[tauri::command]
@@ -41,7 +69,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, get_app_info])
+        .invoke_handler(tauri::generate_handler![greet, get_app_info, get_all_subjects])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
