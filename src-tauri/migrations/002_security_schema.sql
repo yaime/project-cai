@@ -23,6 +23,8 @@ CREATE TABLE sys_users (
     FOREIGN KEY(role_id) REFERENCES sys_roles(id)
 );
 
+CREATE INDEX idx_sys_users_role_id ON sys_users(role_id);
+
 -- sys_logs: Audit Trail
 CREATE TABLE sys_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
