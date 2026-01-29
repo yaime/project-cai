@@ -42,3 +42,6 @@ CREATE TABLE t_auxiliary_balance (
     balance INTEGER DEFAULT 0,
     FOREIGN KEY(subject_code) REFERENCES sys_subjects(code)
 );
+
+-- Index for performance optimization on foreign keys
+CREATE INDEX IF NOT EXISTS idx_voucher_entries_voucher_id ON t_voucher_entries(voucher_id);
