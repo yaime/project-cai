@@ -1,4 +1,5 @@
 pub mod db;
+pub mod auth;
 pub mod ocr;
 
 use std::fs;
@@ -79,7 +80,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, get_app_info, perform_ocr])
+        .invoke_handler(tauri::generate_handler![greet, get_app_info, perform_ocr, auth::login])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

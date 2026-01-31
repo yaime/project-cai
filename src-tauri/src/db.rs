@@ -49,6 +49,23 @@ pub fn init_db<P: AsRef<Path>>(path: P) -> Result<Connection> {
 
     tx.commit()?;
 
+    // Check if sys_users is empty and create default admin
+    let count: i32 = conn.query_row(
+        "SELECT count(*) FROM sys_users",
+        [],
+        |row| row.get(0),
+    )?;
+
+    if count == 0 {
+        let password_hash = crate::auth::hash_password("admin123")
+            .expect("Failed to hash default admin password");
+
+        conn.execute(
+            "INSERT INTO sys_users (username, password_hash, role_id) VALUES (?1, ?2, ?3)",
+            ["admin", &password_hash, "ADMIN"],
+        )?;
+    }
+
     Ok(conn)
 }
 
@@ -77,5 +94,14 @@ mod tests {
         ).unwrap();
 
         assert_eq!(mig_count, 4, "Should have 4 migrations applied");
+
+        // Check if admin user exists
+        let admin_count: i32 = conn.query_row(
+            "SELECT count(*) FROM sys_users WHERE username = 'admin'",
+            [],
+            |row| row.get(0)
+        ).unwrap();
+
+        assert_eq!(admin_count, 1, "Admin user should be created");
     }
 }
