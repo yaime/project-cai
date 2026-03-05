@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use image::{imageops::FilterType, GenericImageView, Pixel};
 use ndarray::Array4;
-use ort::session::{Session, builder::GraphOptimizationLevel};
+use ort::session::{builder::GraphOptimizationLevel, Session};
 use std::fs;
 
 pub struct OcrService {
@@ -53,7 +53,9 @@ impl OcrService {
         }
 
         let shape = vec![1, 3, target_height as usize, target_width as usize];
-        let data = input.as_slice().ok_or(anyhow::anyhow!("Input tensor not contiguous"))?;
+        let data = input
+            .as_slice()
+            .ok_or(anyhow::anyhow!("Input tensor not contiguous"))?;
         let tensor = ort::value::Tensor::from_array((shape, data.to_vec()))?;
         let inputs = ort::inputs![tensor];
         let outputs = self.session.run(inputs)?;
@@ -95,7 +97,7 @@ impl OcrService {
                     text.push('?');
                 }
                 total_conf += max_score; // Note: this is logit or prob? Rec output is usually softmax prob.
-                // If it's raw logits, we should apply softmax. PP-OCR output is usually Softmax.
+                                         // If it's raw logits, we should apply softmax. PP-OCR output is usually Softmax.
                 char_count += 1;
             }
             last_index = max_idx;

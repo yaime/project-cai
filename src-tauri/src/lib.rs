@@ -1,5 +1,5 @@
-pub mod db;
 pub mod auth;
+pub mod db;
 pub mod ocr;
 
 use std::fs;
@@ -26,7 +26,10 @@ fn get_app_info(state: tauri::State<db::AppState>) -> String {
 }
 
 #[tauri::command]
-async fn perform_ocr(state: tauri::State<'_, OcrState>, path: String) -> Result<ocr::TextResult, String> {
+async fn perform_ocr(
+    state: tauri::State<'_, OcrState>,
+    path: String,
+) -> Result<ocr::TextResult, String> {
     let mut service = state.service.lock().unwrap();
     if let Some(svc) = service.as_mut() {
         svc.infer(&path).map_err(|e| e.to_string())
@@ -41,7 +44,10 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let app_data_dir = app.path().app_data_dir().expect("failed to get app data dir");
+            let app_data_dir = app
+                .path()
+                .app_data_dir()
+                .expect("failed to get app data dir");
 
             // Ensure directory exists
             if !app_data_dir.exists() {
@@ -67,8 +73,9 @@ pub fn run() {
 
             let ocr_service = ocr::OcrService::new(
                 model_path.to_str().unwrap_or(""),
-                keys_path.to_str().unwrap_or("")
-            ).ok();
+                keys_path.to_str().unwrap_or(""),
+            )
+            .ok();
 
             if ocr_service.is_none() {
                 println!("OCR Model not loaded. Expected at: {:?}", model_path);
@@ -80,7 +87,12 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, get_app_info, perform_ocr, auth::login])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            get_app_info,
+            perform_ocr,
+            auth::login
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
