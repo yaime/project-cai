@@ -44,12 +44,27 @@ impl OcrService {
 
         let mut input = Array4::<f32>::zeros((1, 3, target_height as usize, target_width as usize));
 
-        for (x, y, pixel) in resized.pixels() {
-            let channels = pixel.channels();
-            // Normalize: (pixel / 255.0 - 0.5) / 0.5  => (pixel / 255.0) * 2.0 - 1.0
-            input[[0, 0, y as usize, x as usize]] = (channels[0] as f32 / 255.0 - 0.5) / 0.5;
-            input[[0, 1, y as usize, x as usize]] = (channels[1] as f32 / 255.0 - 0.5) / 0.5;
-            input[[0, 2, y as usize, x as usize]] = (channels[2] as f32 / 255.0 - 0.5) / 0.5;
+        // Convert to RGB8 to ensure we have a contiguous 3-channel layout
+        let rgb = resized.to_rgb8();
+        let size = (target_height * target_width) as usize;
+
+        if let Some(slice) = input.as_slice_mut() {
+            let (ch0, rest) = slice.split_at_mut(size);
+            let (ch1, ch2) = rest.split_at_mut(size);
+
+            for (chunk, ((c0, c1), c2)) in rgb.as_raw().chunks_exact(3).zip(ch0.iter_mut().zip(ch1.iter_mut()).zip(ch2.iter_mut())) {
+                *c0 = (chunk[0] as f32 / 255.0 - 0.5) / 0.5;
+                *c1 = (chunk[1] as f32 / 255.0 - 0.5) / 0.5;
+                *c2 = (chunk[2] as f32 / 255.0 - 0.5) / 0.5;
+            }
+        } else {
+            // Fallback just in case zeros() doesn't return a contiguous array (highly unlikely)
+            for (x, y, pixel) in resized.pixels() {
+                let channels = pixel.channels();
+                input[[0, 0, y as usize, x as usize]] = (channels[0] as f32 / 255.0 - 0.5) / 0.5;
+                input[[0, 1, y as usize, x as usize]] = (channels[1] as f32 / 255.0 - 0.5) / 0.5;
+                input[[0, 2, y as usize, x as usize]] = (channels[2] as f32 / 255.0 - 0.5) / 0.5;
+            }
         }
 
         let shape = vec![1, 3, target_height as usize, target_width as usize];
